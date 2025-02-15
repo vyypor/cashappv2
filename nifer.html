@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CashApp Clone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+        }
+        .section {
+            background: #121212;
+            width: 100%;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+        .balance {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .subtext {
+            color: gray;
+            font-size: 14px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        .button {
+            background: #222;
+            color: white;
+            padding: 12px;
+            width: 48%;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+        }
+        .button:hover {
+            background: #333;
+        }
+        .highlight {
+            background: #00d632;
+            color: black;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            background: #121212;
+            padding: 15px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 400px;
+        }
+        .nav button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .transactions {
+            font-size: 14px;
+        }
+        .explore-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .explore-item {
+            background: #121212;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .explore-item p {
+            margin: 5px 0 0;
+            color: gray;
+            font-size: 12px;
+        }
+        .slider-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .slider {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Money</h2>
+        <div class="section">
+            <p class="subtext">Cash balance</p>
+            <p class="balance">$<span id="balance">0.00</span></p>
+            <p class="subtext">Account **** Routing ***</p>
+            <div class="buttons">
+                <button class="button highlight" onclick="addMoney()">Add money</button>
+                <button class="button" onclick="openWithdrawDialog()">Withdraw</button>
+            </div>
+        </div>
+        <div class="section">
+            <h3>Save</h3>
+            <p class="subtext">Savings</p>
+            <p class="balance">$0.00</p>
+            <p class="subtext">Up to 4% interest</p>
+        </div>
+        <div class="section transactions">
+            <h3>Transactions</h3>
+            <ul id="transaction-list"></ul>
+        </div>
+        <h3>Explore</h3>
+        <div class="explore-section">
+            <div class="explore-item">
+                <p>Taxes</p>
+                <p>Pay $0 to file</p>
+            </div>
+            <div class="explore-item">
+                <p>Bitcoin</p>
+                <p>Learn and invest</p>
+            </div>
+            <div class="explore-item">
+                <p>Stocks</p>
+                <p>Invest with $1</p>
+            </div>
+        </div>
+    </div>
+    <div class="nav">
+        <button>🏠</button>
+        <button>📷</button>
+        <button>$</button>
+        <button>🔍</button>
+        <button>🔔</button>
+    </div>
+    <script>
+        let balance = parseFloat(localStorage.getItem("balance")) || 500;
+        function updateBalance() {
+            document.getElementById("balance").innerText = balance.toFixed(2);
+            localStorage.setItem("balance", balance);
+        }
+        function addMoney() {
+            let amount = prompt("Enter amount to add:");
+            amount = parseFloat(amount);
+            if (!isNaN(amount) && amount > 0) {
+                balance += amount;
+                updateBalance();
+                addTransaction(`Added: $${amount.toFixed(2)}`, "#00d632");
+            }
+        }
+        function openWithdrawDialog() {
+            let amount = balance / 2;
+            let slider = document.createElement("input");
+            slider.type = "range";
+            slider.min = "1";
+            slider.max = balance;
+            slider.value = amount;
+            slider.className = "slider";
+            let output = document.createElement("p");
+            output.innerText = `$${slider.value}`;
+            slider.oninput = function() {
+                output.innerText = `$${this.value}`;
+            };
+            let container = document.createElement("div");
+            container.className = "slider-container";
+            container.appendChild(output);
+            container.appendChild(slider);
+            let confirmBtn = document.createElement("button");
+            confirmBtn.innerText = "Withdraw";
+            confirmBtn.className = "button";
+            confirmBtn.onclick = function() {
+                withdrawMoney(parseFloat(slider.value));
+                document.body.removeChild(container);
+            };
+            container.appendChild(confirmBtn);
+            document.body.appendChild(container);
+        }
+        function withdrawMoney(amount) {
+            if (amount > 0 && amount <= balance) {
+                balance -= amount;
+                updateBalance();
+                addTransaction(`Withdrawn: $${amount.toFixed(2)}`, "red");
+            }
+        }
+        function addTransaction(text, color) {
+            let list = document.getElementById("transaction-list");
+            let item = document.createElement("li");
+            item.textContent = text;
+            item.style.color = color;
+            list.prepend(item);
+        }
+        updateBalance();
+    </script>
+</body>
+</html>
