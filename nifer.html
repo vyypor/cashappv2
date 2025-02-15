@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CashApp Clone</title>
+    <title>Cash App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,14 +11,15 @@
             color: white;
             margin: 0;
             padding: 0;
-        }
-        .container {
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
             width: 100%;
             max-width: 400px;
-            margin: auto;
             padding: 20px;
         }
         .section {
@@ -29,7 +30,7 @@
             margin-bottom: 15px;
         }
         .balance {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
         }
         .subtext {
@@ -38,20 +39,20 @@
         }
         .buttons {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             margin-top: 15px;
         }
         .button {
             background: #222;
             color: white;
-            padding: 12px;
-            width: 48%;
+            padding: 15px;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             text-align: center;
             cursor: pointer;
+            margin-bottom: 10px;
         }
         .button:hover {
             background: #333;
@@ -59,6 +60,33 @@
         .highlight {
             background: #00d632;
             color: black;
+        }
+        .explore-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 80px;
+        }
+        .explore-item {
+            background: #1c1c1c;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .withdraw-section {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 400px;
+            background: #121212;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        .withdraw-section input {
+            width: 100%;
+            margin: 10px 0;
         }
         .nav {
             display: flex;
@@ -77,32 +105,6 @@
             font-size: 18px;
             cursor: pointer;
         }
-        .transactions {
-            font-size: 14px;
-        }
-        .explore-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .explore-item {
-            background: #121212;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-        }
-        .explore-item p {
-            margin: 5px 0 0;
-            color: gray;
-            font-size: 12px;
-        }
-        .slider-container {
-            text-align: center;
-            margin-top: 10px;
-        }
-        .slider {
-            width: 100%;
-        }
     </style>
 </head>
 <body>
@@ -110,22 +112,11 @@
         <h2>Money</h2>
         <div class="section">
             <p class="subtext">Cash balance</p>
-            <p class="balance">$<span id="balance">0.00</span></p>
-            <p class="subtext">Account **** Routing ***</p>
+            <p class="balance">$<span id="balance">500.00</span></p>
             <div class="buttons">
                 <button class="button highlight" onclick="addMoney()">Add money</button>
-                <button class="button" onclick="openWithdrawDialog()">Withdraw</button>
+                <button class="button" onclick="showWithdraw()">Withdraw</button>
             </div>
-        </div>
-        <div class="section">
-            <h3>Save</h3>
-            <p class="subtext">Savings</p>
-            <p class="balance">$0.00</p>
-            <p class="subtext">Up to 4% interest</p>
-        </div>
-        <div class="section transactions">
-            <h3>Transactions</h3>
-            <ul id="transaction-list"></ul>
         </div>
         <h3>Explore</h3>
         <div class="explore-section">
@@ -143,6 +134,12 @@
             </div>
         </div>
     </div>
+    <div class="withdraw-section" id="withdraw-section">
+        <h3>Withdraw Money</h3>
+        <input type="range" id="withdraw-slider" min="0" max="500" step="1" value="0" oninput="updateWithdrawAmount()">
+        <p>Amount: $<span id="withdraw-amount">0</span></p>
+        <button class="button highlight" onclick="withdrawMoney()">Confirm</button>
+    </div>
     <div class="nav">
         <button>🏠</button>
         <button>📷</button>
@@ -151,62 +148,34 @@
         <button>🔔</button>
     </div>
     <script>
-        let balance = parseFloat(localStorage.getItem("balance")) || 500;
-        function updateBalance() {
-            document.getElementById("balance").innerText = balance.toFixed(2);
-            localStorage.setItem("balance", balance);
-        }
+        let balance = 500;
         function addMoney() {
             let amount = prompt("Enter amount to add:");
             amount = parseFloat(amount);
             if (!isNaN(amount) && amount > 0) {
                 balance += amount;
                 updateBalance();
-                addTransaction(`Added: $${amount.toFixed(2)}`, "#00d632");
             }
         }
-        function openWithdrawDialog() {
-            let amount = balance / 2;
-            let slider = document.createElement("input");
-            slider.type = "range";
-            slider.min = "1";
-            slider.max = balance;
-            slider.value = amount;
-            slider.className = "slider";
-            let output = document.createElement("p");
-            output.innerText = `$${slider.value}`;
-            slider.oninput = function() {
-                output.innerText = `$${this.value}`;
-            };
-            let container = document.createElement("div");
-            container.className = "slider-container";
-            container.appendChild(output);
-            container.appendChild(slider);
-            let confirmBtn = document.createElement("button");
-            confirmBtn.innerText = "Withdraw";
-            confirmBtn.className = "button";
-            confirmBtn.onclick = function() {
-                withdrawMoney(parseFloat(slider.value));
-                document.body.removeChild(container);
-            };
-            container.appendChild(confirmBtn);
-            document.body.appendChild(container);
+        function showWithdraw() {
+            document.getElementById("withdraw-section").style.display = "block";
+            document.getElementById("withdraw-slider").max = balance;
         }
-        function withdrawMoney(amount) {
+        function updateWithdrawAmount() {
+            let slider = document.getElementById("withdraw-slider");
+            document.getElementById("withdraw-amount").innerText = slider.value;
+        }
+        function withdrawMoney() {
+            let amount = parseFloat(document.getElementById("withdraw-slider").value);
             if (amount > 0 && amount <= balance) {
                 balance -= amount;
                 updateBalance();
-                addTransaction(`Withdrawn: $${amount.toFixed(2)}`, "red");
+                document.getElementById("withdraw-section").style.display = "none";
             }
         }
-        function addTransaction(text, color) {
-            let list = document.getElementById("transaction-list");
-            let item = document.createElement("li");
-            item.textContent = text;
-            item.style.color = color;
-            list.prepend(item);
+        function updateBalance() {
+            document.getElementById('balance').innerText = balance.toFixed(2);
         }
-        updateBalance();
     </script>
 </body>
 </html>
